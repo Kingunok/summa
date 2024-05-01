@@ -10,7 +10,7 @@ baseurl = os.getenv("BASEURL", "https://localhost:80")
 dlurl1 = os.getenv("DLURL1", "https://fastdl.tamilloggers.workers.dev")
 dlurl2 = os.getenv("DLURL2", "https://mediumdl.tamilloggers.workers.dev")
 dlurl3 = os.getenv("DLURL3", "https://slowdl.tamilloggers.workers.dev")
-mongodb_url = os.getenv("DATABSE_URL")
+mongodb_url = os.getenv("DATABSE_URL", "mongodb+srv://tamilloggers:tamilloggers@cluster0.plurmqb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 
 
 client = MongoClient(mongodb_url)
