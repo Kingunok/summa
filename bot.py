@@ -32,19 +32,19 @@ def generate_start(bot, update):
     bot.send_message(update.chat.id, "Send me the direct link (URL).")
     return DIRECT_LINK
 
-@bot.on_message(filters.text & ~filters.command)
+@bot.on_message(filters.text & ~filters.command("gen"))
 def receive_direct_link(bot, update):
     context.user_data['direct_link'] = update.text
     bot.send_message(update.chat.id, "Send me tellink1.")
     return TELLINK1
 
-@bot.on_message(filters.text & ~filters.command)
+@bot.on_message(filters.text & ~filters.command("gen"))
 def receive_tellink1(bot, update):
     context.user_data['tellink1'] = update.text
     bot.send_message(update.chat.id, "Send me tellink2.")
     return TELLINK2
 
-@bot.on_message(filters.text & ~filters.command)
+@bot.on_message(filters.text & ~filters.command("gen"))
 def receive_tellink2(bot, update):
     context.user_data['tellink2'] = update.text
     bot.send_message(update.chat.id, "Confirm generation? (yes/no)")
@@ -285,5 +285,5 @@ def render_html(html_hash):
         return "HTML page not found."
 
 if __name__ == "__main__":
-    bot.run()
+    bot.start()
     app.run(host='0.0.0.0', port=5000)
