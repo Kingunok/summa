@@ -18,7 +18,7 @@ DIRECT_LINK, TELLINK1, TELLINK2, CONFIRM = range(4)
 # Pyrogram bot initialization
 api_id = int(os.getenv("API_ID","27475576"))
 api_hash = os.getenv("API_HASH","12b16abd69249bfb65633668a7cc416a")
-bot_token = os.getenv("BOT_TOKEN", "telegram.ext6732148866:AAF1hYe6x4r01zfPyUHc_ft4I0cP79E3X4A")
+bot_token = os.getenv("BOT_TOKEN", "6732148866:AAFVcAsfEwBcompCFy_H9T_Umu2WlNzDTag")
 
 bot = Client("my_bot", api_id=api_id, api_hash=api_hash, bot_token=bot_token)
 
