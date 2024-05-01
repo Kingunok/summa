@@ -7,9 +7,9 @@ import os
 
 
 baseurl = os.getenv("BASEURL", "https://localhost:80")
-dlurl1 = os.getenv("DLURL1", "https://summa.com")
-dlurl2 = os.getenv("DLURL2", "https://summa.com")
-dlurl3 = os.getenv("DLURL3", "https://summa.com")
+dlurl1 = os.getenv("DLURL1", "https://fastdl.tamilloggers.workers.dev")
+dlurl2 = os.getenv("DLURL2", "https://mediumdl.tamilloggers.workers.dev")
+dlurl3 = os.getenv("DLURL3", "https://slowdl.tamilloggers.workers.dev")
 mongodb_url = os.getenv("DATABSE_URL")
 
 
