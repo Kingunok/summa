@@ -18,7 +18,7 @@ db = client['html_pages']
 collection = db['generated_pages']
 
 
-TOKEN = 'YOUR_TELEGRAM_BOT_TOKEN'
+TOKEN = '6732148866:AAF1hYe6x4r01zfPyUHc_ft4I0cP79E3X4A'
 bot = telegram.Bot(token=TOKEN)
 
 
