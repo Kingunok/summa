@@ -1,10 +1,9 @@
-import telegram
-from telegram.ext import Updater, CommandHandler, ConversationHandler, MessageHandler, Filters
-from pymongo import MongoClient
+
+from pyrogram import Client, filters
 from flask import Flask, render_template_string
+from pymongo import MongoClient
 import hashlib
 import os
-
 
 baseurl = os.getenv("BASEURL", "https://localhost:80")
 dlurl1 = os.getenv("DLURL1", "https://fastdl.tamilloggers.workers.dev")
@@ -12,52 +11,49 @@ dlurl2 = os.getenv("DLURL2", "https://mediumdl.tamilloggers.workers.dev")
 dlurl3 = os.getenv("DLURL3", "https://slowdl.tamilloggers.workers.dev")
 mongodb_url = os.getenv("DATABSE_URL", "mongodb+srv://tamilloggers:tamilloggers@cluster0.plurmqb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 
-
-client = MongoClient(mongodb_url)
-db = client['html_pages']
-collection = db['generated_pages']
-
-
-TOKEN = '6732148866:AAF1hYe6x4r01zfPyUHc_ft4I0cP79E3X4A'
-bot = telegram.Bot(token=TOKEN)
-
-
 app = Flask(__name__)
 
 DIRECT_LINK, TELLINK1, TELLINK2, CONFIRM = range(4)
 
+# Pyrogram bot initialization
+api_id = int(os.getenv("API_ID","27475576"))
+api_hash = os.getenv("API_HASH","12b16abd69249bfb65633668a7cc416a")
+bot_token = os.getenv("BOT_TOKEN", "telegram.ext6732148866:AAF1hYe6x4r01zfPyUHc_ft4I0cP79E3X4A")
 
-def start(update, context):
-    update.message.reply_text("Send /gen to generate an HTML page.")
+bot = Client("my_bot", api_id=api_id, api_hash=api_hash, bot_token=bot_token)
 
+# MongoDB initialization
+client = MongoClient(mongodb_url)
+db = client['html_pages']
+collection = db['generated_pages']
 
-def generate_start(update, context):
-    update.message.reply_text("Send me the direct link (URL).")
+@bot.on_message(filters.command("gen"))
+def generate_start(bot, update):
+    bot.send_message(update.chat.id, "Send me the direct link (URL).")
     return DIRECT_LINK
 
-
-def receive_direct_link(update, context):
-    context.user_data['direct_link'] = update.message.text
-    update.message.reply_text("Send me tellink1.")
+@bot.on_message(filters.text & ~filters.command)
+def receive_direct_link(bot, update):
+    context.user_data['direct_link'] = update.text
+    bot.send_message(update.chat.id, "Send me tellink1.")
     return TELLINK1
 
-
-def receive_tellink1(update, context):
-    context.user_data['tellink1'] = update.message.text
-    update.message.reply_text("Send me tellink2.")
+@bot.on_message(filters.text & ~filters.command)
+def receive_tellink1(bot, update):
+    context.user_data['tellink1'] = update.text
+    bot.send_message(update.chat.id, "Send me tellink2.")
     return TELLINK2
 
-
-def receive_tellink2(update, context):
-    context.user_data['tellink2'] = update.message.text
-    update.message.reply_text("Confirm generation? (yes/no)")
+@bot.on_message(filters.text & ~filters.command)
+def receive_tellink2(bot, update):
+    context.user_data['tellink2'] = update.text
+    bot.send_message(update.chat.id, "Confirm generation? (yes/no)")
     return CONFIRM
 
 def parse_link(link):
     domain = link.split('/')[2]
     path = '/'.join(link.split('/')[3:])
     return domain, path
-
 
 def generate_html_content(domain, path, tellink1, tellink2):
     dllink1 = f"{dlurl1}/{path}"
@@ -272,6 +268,7 @@ h1{{
     """
     return html_content
 
+
 def save_html_to_db(html_content):
     html_hash = hashlib.sha256(html_content.encode()).hexdigest()
     existing_entry = collection.find_one({'hash': html_hash})
@@ -287,53 +284,6 @@ def render_html(html_hash):
     else:
         return "HTML page not found."
 
-updater = Updater(TOKEN, use_context=True)
-dp = updater.dispatcher
-
-
-def confirm_generation(update, context):
-    confirmation = update.message.text.lower()
-    if confirmation == 'yes':
-        direct_link = context.user_data['direct_link']
-        domain, path = parse_link(direct_link)
-        tellink1 = context.user_data['tellink1']
-        tellink2 = context.user_data['tellink2']
-        html_content = generate_html_content(domain, path, tellink1, tellink2)
-        html_hash = save_html_to_db(html_content)
-        html_url = f"{baseurl}/{html_hash}"  
-        update.message.reply_text(f"HTML page generated successfully. Access it here: {html_url}")
-        return html_content  
-    else:
-        update.message.reply_text("Generation process canceled.")
-        return None  
-
-
-def send_generated_html(update, context):
-    html_content = context.user_data.get('html_content')
-    if html_content:
-        update.message.reply_text(html_content)
-    else:
-        update.message.reply_text("HTML page not generated.")
-
-
-conv_handler = ConversationHandler(
-    entry_points=[CommandHandler('gen', generate_start)],
-    states={
-        DIRECT_LINK: [MessageHandler(Filters.text & ~Filters.command, receive_direct_link)],
-        TELLINK1: [MessageHandler(Filters.text & ~Filters.command, receive_tellink1)],
-        TELLINK2: [MessageHandler(Filters.text & ~Filters.command, receive_tellink2)],
-        CONFIRM: [MessageHandler(Filters.text & ~Filters.command, confirm_generation)]
-    },
-    fallbacks=[CommandHandler('cancel', cancel)]
-)
-
-dp.add_handler(MessageHandler(Filters.text & ~Filters.command, send_generated_html))
-
-
-dp.add_handler(CommandHandler("start", start))
-dp.add_handler(conv_handler)
-
-updater.start_polling()
-
 if __name__ == "__main__":
+    bot.run()
     app.run(host='0.0.0.0', port=5000)
